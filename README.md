@@ -1,5 +1,7 @@
 Rocket Chip Generator :rocket: ![Build Status](https://github.com/chipsalliance/rocket-chip/workflows/Continuous%20Integration/badge.svg?branch=master)
 =====================
+This is a modified rocket-chip for better generation of vivado ips
+
 
 This repository contains the Rocket chip generator necessary to instantiate
 the RISC-V Rocket Core. For more information on Rocket Chip, please consult our [technical report](https://www2.eecs.berkeley.edu/Pubs/TechRpts/2016/EECS-2016-17.html).
