@@ -273,6 +273,13 @@ class WithDefaultMemPort extends Config((site, here, up) => {
                       beatBytes = site(MemoryBusKey).beatBytes,
                       idBits = 4), 1))
 })
+class WithMCUMemPort extends Config((site, here, up) => {
+  case ExtMem => Some(MemoryPortParams(MasterPortParams(
+                      base = x"8000_0000",
+                      size = x"1000_0000",
+                      beatBytes = site(MemoryBusKey).beatBytes,
+                      idBits = 4), 1))
+})
 
 class WithCustomMemPort (base_addr: BigInt, base_size: BigInt, data_width: Int, id_bits: Int, maxXferBytes: Int) extends Config((site, here, up) => {
   case ExtMem => Some(MemoryPortParams(MasterPortParams(
@@ -291,6 +298,13 @@ class WithDefaultMMIOPort extends Config((site, here, up) => {
   case ExtBus => Some(MasterPortParams(
                       base = x"6000_0000",
                       size = x"2000_0000",
+                      beatBytes = site(MemoryBusKey).beatBytes,
+                      idBits = 4))
+})
+class WithMCUMMIOPort extends Config((site, here, up) => {
+  case ExtBus => Some(MasterPortParams(
+                      base = x"10000_0000",
+                      size = x"200000_0000",
                       beatBytes = site(MemoryBusKey).beatBytes,
                       idBits = 4))
 })

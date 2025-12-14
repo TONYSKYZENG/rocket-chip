@@ -21,6 +21,17 @@ class BaseConfig extends Config(
   new BaseSubsystemConfig
 )
 
+class MCULargeMemConfig extends Config(
+  new WithMCUMemPort ++
+  //new WithDefaultMMIOPort ++
+   new WithMCUMMIOPort ++
+  new WithDefaultSlavePort ++
+  new WithTimebase(BigInt(1000000)) ++ // 1 MHz
+  new WithDTS("freechips,rocketchip-unknown", Nil) ++
+  new WithNExtTopInterrupts(2) ++
+  new BaseSubsystemConfig
+)
+
 class DefaultConfig extends Config(new WithNBigCores(1) ++ new WithCoherentBusTopology ++ new BaseConfig)
 
 class DefaultBufferlessConfig extends Config(new WithBufferlessBroadcastHub ++ new DefaultConfig)
