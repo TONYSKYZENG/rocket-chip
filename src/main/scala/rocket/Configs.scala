@@ -70,25 +70,27 @@ class WithNHugeMCUCores(
     val big = RocketTileParams(
       core   = RocketCoreParams(
         mulDiv = Some(MulDivParams(
-          mulUnroll = 8,
+          mulUnroll = 1,
           mulEarlyOut = true,
           divEarlyOut = true,
         )),
-        useZba = true,
-        useZbb = true,
-        useZbs = true,
+        useZba = false,
+        useZbb = false,
+        useZbs = false,
         useDebug = false,
         useVM = false,
-        fpu = Some(FPUParams(minFLen = 16))),
+        haveCFlush = true,
+        haveCease =  false,
+        fpu = None),
       dcache = Some(DCacheParams(
         nSets = 16,
-        nWays = 2,
+        nWays = 1,
         rowBits = site(SystemBusKey).beatBits,
         nMSHRs = 0,
         blockBytes = site(CacheBlockBytes))),
       icache = Some(ICacheParams(
         nSets = 16,
-        nWays = 2,
+        nWays = 1,
         rowBits = site(SystemBusKey).beatBits,
         blockBytes = site(CacheBlockBytes))))
     List.tabulate(n)(i => RocketTileAttachParams(
