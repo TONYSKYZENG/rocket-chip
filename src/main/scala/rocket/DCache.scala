@@ -1026,6 +1026,7 @@ class DCacheModule(outer: DCache) extends HellaCacheModule(outer) {
     when (s2_valid_masked && s2_cmd_flush_all) {
       when (!flushed && !io.cpu.s2_kill && !release_ack_wait && !uncachedInFlight.asUInt.orR) {
         flushing := true.B
+        io.ptw.customCSRs.set_dcache_flush_done := false.B
         flushing_req := s2_req
       }
     }
