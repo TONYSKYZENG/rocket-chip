@@ -1016,7 +1016,11 @@ class DCacheModule(outer: DCache) extends HellaCacheModule(outer) {
   metaArb.io.in(5).bits.addr := Cat(io.cpu.req.bits.addr >> untagBits, metaArb.io.in(5).bits.idx << blockOffBits)
   metaArb.io.in(5).bits.way_en := metaArb.io.in(4).bits.way_en
   metaArb.io.in(5).bits.data := metaArb.io.in(4).bits.data
+  val prev_flush = RegNext(io.ptw.customCSRs.dcache_flush, init = false.B)
+  val flush_edge = io.ptw.customCSRs.dcache_flush && !prev_flush
 
+  val prev_flush_done = RegNext(flushDone, init = false.B)
+  val flush_done_edge = flushDone && !prev_flush_done
   // Only flush D$ on FENCE.I if some cached executable regions are untracked.
   if (supports_flush) {
     when (s2_valid_masked && s2_cmd_flush_all) {
@@ -1025,7 +1029,15 @@ class DCacheModule(outer: DCache) extends HellaCacheModule(outer) {
         flushing_req := s2_req
       }
     }
-
+    // 👇 👇 👇 新增这段
+    when (flush_edge && !flushing && !release_ack_wait && !uncachedInFlight.asUInt.orR) {
+      flushing := true.B
+      io.ptw.customCSRs.set_dcache_flush_done := false.B
+      flushing_req := 0.U.asTypeOf(s2_req) // 用默认值即可
+    }
+    when (flush_done_edge) {
+      io.ptw.customCSRs.set_dcache_flush_done := true.B
+    }
     when (tl_out_a.fire && !s2_uncached) { flushed := false.B }
     when (flushing) {
       s1_victim_way := flushCounter >> log2Up(nSets)

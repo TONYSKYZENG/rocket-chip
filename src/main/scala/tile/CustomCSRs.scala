@@ -33,11 +33,21 @@ class CustomCSRs(implicit p: Parameters) extends CoreBundle {
   protected def chickenCSRId = 0x7c1
   protected def chickenCSR: Option[CustomCSR] = None
 
-  // If you override this, you'll want to concatenate super.decls
-  def decls: Seq[CustomCSR] = bpmCSR.toSeq ++ chickenCSR
+  
+
+  protected def dcacheFlushCSRId = 0x7C2
+  protected def dcacheFlushCSR: Option[CustomCSR] = Some(CustomCSR(dcacheFlushCSRId, mask = 1, init = Some(0)))
+
+  protected def dcacheFlushDoneCSRId = 0x7C3
+  protected def dcacheFlushDoneCSR: Option[CustomCSR] = Some(CustomCSR(dcacheFlushDoneCSRId, mask = 1, init = Some(0)))
 
   val csrs = Vec(decls.size, new CustomCSRIO)
-
+  // If you override this, you'll want to concatenate super.decls
+  def decls: Seq[CustomCSR] =
+  bpmCSR.toSeq ++
+  chickenCSR.toSeq ++
+  dcacheFlushCSR.toSeq ++
+  dcacheFlushDoneCSR.toSeq
   def flushBTB = getOrElse(bpmCSR, _.wen, false.B)
   def bpmStatic = getOrElse(bpmCSR, _.value(0), false.B)
   def disableDCacheClockGate = getOrElse(chickenCSR, _.value(0), false.B)
@@ -50,7 +60,15 @@ class CustomCSRs(implicit p: Parameters) extends CoreBundle {
     val idx = decls.indexWhere(_.id == id)
     if (idx < 0) alt else f(csrs(idx))
   }
+  def dcache_flush: Bool = getOrElse(dcacheFlushCSR, _.value(0), false.B)
 
+  /** hardware-written flush done */
+  def dcache_flush_done: Bool =
+    getOrElse(dcacheFlushDoneCSR, _.value(0), false.B)
+
+  /** allow hardware to SET flush_done */
+  def set_dcache_flush_done: Bool =
+    getOrElse(dcacheFlushDoneCSR, _.set, false.B)
   protected def getOrElse[T](csr: Option[CustomCSR], f: CustomCSRIO => T, alt: T): T =
     csr.map(c => getByIdOrElse(c.id, f, alt)).getOrElse(alt)
 }
