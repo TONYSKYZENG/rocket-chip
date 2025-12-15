@@ -41,12 +41,14 @@ object CustomCSRs {
   val mnepc = 0x351
   val mncause = 0x352
   val mnstatus = 0x353
+  val dcache_flush = 0x7C0 // 例如 0x7C0，可以按需更换，只要不冲突
   val all = {
     val res = collection.mutable.ArrayBuffer[Int]()
     res += mnscratch
     res += mnepc
     res += mncause
     res += mnstatus
+    res += dcache_flush // 加这一行
     res.toArray
   }
   val all32 = {

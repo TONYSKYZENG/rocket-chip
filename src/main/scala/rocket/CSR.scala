@@ -268,6 +268,7 @@ class CSRFileIO(hasBeu: Boolean)(implicit p: Parameters) extends CoreBundle
   }
 
   val decode = Vec(decodeWidth, new CSRDecodeIO)
+  val dcache_flush = Output(Bool())
 
   val csr_stall = Output(Bool()) // stall retire for wfi
   val rw_stall = Output(Bool()) // stall rw, rw will have no effect while rw_stall
@@ -516,6 +517,7 @@ class CSRFile(
   val reset_mnstatus = WireDefault(0.U.asTypeOf(new MNStatus()))
   reset_mnstatus.mpp := PRV.M.U
   val reg_mnscratch = Reg(Bits(xLen.W))
+  val reg_dcache_flush = RegInit(false.B)
   val reg_mnepc = Reg(UInt(vaddrBitsExtended.W))
   val reg_mncause = RegInit(0.U(xLen.W))
   val reg_mnstatus = RegInit(reset_mnstatus)
@@ -630,7 +632,7 @@ class CSRFile(
   io.scontext := reg_scontext.getOrElse(0.U)
   io.fiom := (reg_mstatus.prv < PRV.M.U && reg_menvcfg.fiom) || (reg_mstatus.prv < PRV.S.U && reg_senvcfg.fiom) || (reg_mstatus.v && reg_henvcfg.fiom)
   io.pmp := reg_pmp.map(PMP(_))
-
+  io.dcache_flush := reg_dcache_flush
   val isaMaskString =
     (if (usingMulDiv) "M" else "") +
     (if (usingAtomics) "A" else "") +
@@ -1286,7 +1288,10 @@ class CSRFile(
       when (decoded_addr(CSRs.mtvec))  { reg_mtvec := wdata }
     when (decoded_addr(CSRs.mcause))   { reg_mcause := wdata & ((BigInt(1) << (xLen-1)) + (BigInt(1) << whichInterrupt.getWidth) - 1).U }
     when (decoded_addr(CSRs.mtval))    { reg_mtval := wdata }
-
+  // forece flush
+   when (decoded_addr(CustomCSRs.dcache_flush)) {
+     reg_dcache_flush := wdata(0) // 只使用最低位 
+   }
     if (usingNMI) {
       val new_mnstatus = wdata.asTypeOf(new MNStatus())
       when (decoded_addr(CustomCSRs.mnscratch)) { reg_mnscratch := wdata }
